@@ -1,0 +1,844 @@
+REACT PRACTICAL EXAM – 20 COMPLETE App.jsx PROGRAMS
+====================================================
+IMPORTANT:
+- Every numbered program below is a SEPARATE complete src/App.jsx file.
+- Copy ONLY ONE program at a time into src/App.jsx and run it.
+- These examples use React hooks and CSS written inside each component, so no separate CSS file is required.
+- For API programs, internet connection is required. API services can change or be unavailable during an exam.
+- To start a React project:
+    npm create vite@latest react-practical -- --template react
+    cd react-practical
+    npm install
+    npm run dev
+
+----------------------------------------------------
+1. TO-DO LIST APP
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [task, setTask] = useState("");
+  const [tasks, setTasks] = useState([]);
+
+  function addTask() {
+    const value = task.trim();
+    if (!value) return;
+    setTasks([...tasks, { id: Date.now(), text: value, done: false }]);
+    setTask("");
+  }
+
+  function toggleTask(id) {
+    setTasks(tasks.map(item =>
+      item.id === id ? { ...item, done: !item.done } : item
+    ));
+  }
+
+  function deleteTask(id) {
+    setTasks(tasks.filter(item => item.id !== id));
+  }
+
+  return (
+    <main style={styles.page}>
+      <h1>To-Do List</h1>
+      <form onSubmit={e => { e.preventDefault(); addTask(); }} style={styles.row}>
+        <input style={styles.input} value={task} onChange={e => setTask(e.target.value)} placeholder="Enter a task" />
+        <button style={styles.button}>Add</button>
+      </form>
+      <p>{tasks.filter(t => !t.done).length} task(s) remaining</p>
+      {tasks.length === 0 && <p>No tasks yet. Add your first task.</p>}
+      {tasks.map(item => (
+        <div key={item.id} style={styles.item}>
+          <label style={{ textDecoration: item.done ? "line-through" : "none", flex: 1 }}>
+            <input type="checkbox" checked={item.done} onChange={() => toggleTask(item.id)} /> {item.text}
+          </label>
+          <button onClick={() => deleteTask(item.id)}>Delete</button>
+        </div>
+      ))}
+    </main>
+  );
+}
+
+const styles = {
+  page: { maxWidth: 520, margin: "40px auto", padding: 24, fontFamily: "Arial", background: "#f4f7fb", borderRadius: 12 },
+  row: { display: "flex", gap: 8 },
+  input: { flex: 1, padding: 12, border: "1px solid #aaa", borderRadius: 6 },
+  button: { padding: "10px 18px", cursor: "pointer" },
+  item: { display: "flex", alignItems: "center", gap: 10, padding: 10, marginTop: 8, background: "white", borderRadius: 6 }
+};
+
+----------------------------------------------------
+2. CALCULATOR
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [first, setFirst] = useState("");
+  const [second, setSecond] = useState("");
+  const [operator, setOperator] = useState("+");
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState("");
+
+  function calculate() {
+    const a = Number(first);
+    const b = Number(second);
+    if (first.trim() === "" || second.trim() === "") {
+      setError("Enter both numbers.");
+      setResult(null);
+      return;
+    }
+    let answer;
+    if (operator === "+") answer = a + b;
+    else if (operator === "-") answer = a - b;
+    else if (operator === "*") answer = a * b;
+    else {
+      if (b === 0) {
+        setError("Cannot divide by zero.");
+        setResult(null);
+        return;
+      }
+      answer = a / b;
+    }
+    setError("");
+    setResult(answer);
+  }
+
+  return (
+    <main style={s.page}>
+      <h1>Calculator</h1>
+      <input style={s.input} type="number" value={first} onChange={e => setFirst(e.target.value)} placeholder="First number" />
+      <select style={s.input} value={operator} onChange={e => setOperator(e.target.value)}>
+        <option value="+">Addition (+)</option><option value="-">Subtraction (-)</option>
+        <option value="*">Multiplication (*)</option><option value="/">Division (/)</option>
+      </select>
+      <input style={s.input} type="number" value={second} onChange={e => setSecond(e.target.value)} placeholder="Second number" />
+      <button style={s.button} onClick={calculate}>Calculate</button>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {result !== null && <h2>Result: {result}</h2>}
+      <button onClick={() => { setFirst(""); setSecond(""); setResult(null); setError(""); }}>Clear</button>
+    </main>
+  );
+}
+const s = { page: { maxWidth: 400, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "12px 0" }, button: { padding: 10, marginRight: 8, cursor: "pointer" } };
+
+----------------------------------------------------
+3. QUIZ APP
+----------------------------------------------------
+import { useState } from "react";
+
+const questions = [
+  { question: "Which library is used to build user interfaces?", options: ["React", "MongoDB", "Node only", "SQL"], answer: "React" },
+  { question: "Which hook stores component state?", options: ["useRoute", "useState", "usePage", "useHTML"], answer: "useState" },
+  { question: "Which syntax is commonly used to write HTML-like UI in React?", options: ["JSX", "SQL", "XML only", "Markdown"], answer: "JSX" },
+  { question: "Which prop helps React identify list items?", options: ["idName", "key", "class", "indexOnly"], answer: "key" }
+];
+
+export default function App() {
+  const [index, setIndex] = useState(0);
+  const [selected, setSelected] = useState("");
+  const [score, setScore] = useState(0);
+  const [finished, setFinished] = useState(false);
+
+  function nextQuestion() {
+    if (!selected) return;
+    const newScore = score + (selected === questions[index].answer ? 1 : 0);
+    setScore(newScore);
+    if (index === questions.length - 1) setFinished(true);
+    else setIndex(index + 1);
+    setSelected("");
+  }
+
+  function restart() {
+    setIndex(0); setSelected(""); setScore(0); setFinished(false);
+  }
+
+  return (
+    <main style={s.card}>
+      <h1>React Quiz</h1>
+      {finished ? (
+        <>
+          <h2>Quiz Completed!</h2>
+          <p>Your score: {score} / {questions.length}</p>
+          <button onClick={restart}>Try Again</button>
+        </>
+      ) : (
+        <>
+          <p>Question {index + 1} of {questions.length}</p>
+          <h2>{questions[index].question}</h2>
+          {questions[index].options.map(option => (
+            <label key={option} style={s.option}>
+              <input type="radio" name="answer" value={option} checked={selected === option} onChange={() => setSelected(option)} />
+              {option}
+            </label>
+          ))}
+          <button disabled={!selected} onClick={nextQuestion}>{index === questions.length - 1 ? "Finish" : "Next"}</button>
+        </>
+      )}
+    </main>
+  );
+}
+const s = { card: { maxWidth: 520, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 12 }, option: { display: "block", padding: 10, margin: "8px 0", background: "#f3f5f8", borderRadius: 6 } };
+
+----------------------------------------------------
+4. NOTES APP
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [notes, setNotes] = useState([]);
+  const [search, setSearch] = useState("");
+
+  function addNote(e) {
+    e.preventDefault();
+    if (!title.trim() || !body.trim()) return;
+    setNotes([{ id: Date.now(), title: title.trim(), body: body.trim(), date: new Date().toLocaleString() }, ...notes]);
+    setTitle(""); setBody("");
+  }
+
+  const visibleNotes = notes.filter(note =>
+    (note.title + " " + note.body).toLowerCase().includes(search.toLowerCase())
+  );
+
+  return (
+    <main style={s.page}>
+      <h1>Notes App</h1>
+      <form onSubmit={addNote}>
+        <input style={s.input} value={title} onChange={e => setTitle(e.target.value)} placeholder="Note title" />
+        <textarea style={s.input} rows="4" value={body} onChange={e => setBody(e.target.value)} placeholder="Write your note" />
+        <button>Add Note</button>
+      </form>
+      <input style={s.input} value={search} onChange={e => setSearch(e.target.value)} placeholder="Search notes" />
+      <h2>Saved Notes ({visibleNotes.length})</h2>
+      {visibleNotes.map(note => (
+        <article key={note.id} style={s.note}>
+          <h3>{note.title}</h3><p>{note.body}</p><small>{note.date}</small>
+          <div><button onClick={() => setNotes(notes.filter(n => n.id !== note.id))}>Delete</button></div>
+        </article>
+      ))}
+      {visibleNotes.length === 0 && <p>No matching notes.</p>}
+    </main>
+  );
+}
+const s = { page: { maxWidth: 650, margin: "30px auto", padding: 20, fontFamily: "Arial" }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "10px 0" }, note: { padding: 14, marginTop: 12, background: "#f3f6fa", borderRadius: 8 } };
+
+----------------------------------------------------
+5. TEMPERATURE CONVERTER
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [temperature, setTemperature] = useState("");
+  const [from, setFrom] = useState("C");
+  const [to, setTo] = useState("F");
+
+  function convert() {
+    if (temperature.trim() === "") return "";
+    const value = Number(temperature);
+    let celsius;
+    if (from === "C") celsius = value;
+    else if (from === "F") celsius = (value - 32) * 5 / 9;
+    else celsius = value - 273.15;
+
+    if (to === "C") return celsius.toFixed(2);
+    if (to === "F") return (celsius * 9 / 5 + 32).toFixed(2);
+    return (celsius + 273.15).toFixed(2);
+  }
+
+  return (
+    <main style={s.card}>
+      <h1>Temperature Converter</h1>
+      <input style={s.input} type="number" value={temperature} onChange={e => setTemperature(e.target.value)} placeholder="Enter temperature" />
+      <label>From: <select value={from} onChange={e => setFrom(e.target.value)}><option value="C">Celsius</option><option value="F">Fahrenheit</option><option value="K">Kelvin</option></select></label>
+      <br /><br />
+      <label>To: <select value={to} onChange={e => setTo(e.target.value)}><option value="C">Celsius</option><option value="F">Fahrenheit</option><option value="K">Kelvin</option></select></label>
+      <h2>Converted value: {temperature.trim() === "" ? "—" : convert()} {to}</h2>
+    </main>
+  );
+}
+const s = { card: { maxWidth: 450, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, input: { display: "block", width: "100%", padding: 10, boxSizing: "border-box", margin: "14px 0" } };
+
+----------------------------------------------------
+6. EXPENSE TRACKER
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState("");
+  const [type, setType] = useState("expense");
+  const [entries, setEntries] = useState([]);
+
+  function addEntry(e) {
+    e.preventDefault();
+    const value = Number(amount);
+    if (!description.trim() || !amount || value <= 0) return;
+    setEntries([{ id: Date.now(), description: description.trim(), amount: value, type }, ...entries]);
+    setDescription(""); setAmount("");
+  }
+
+  const income = entries.filter(x => x.type === "income").reduce((sum, x) => sum + x.amount, 0);
+  const expenses = entries.filter(x => x.type === "expense").reduce((sum, x) => sum + x.amount, 0);
+
+  return (
+    <main style={s.page}>
+      <h1>Expense Tracker</h1>
+      <section style={s.summary}><p>Income: ₹{income.toFixed(2)}</p><p>Expenses: ₹{expenses.toFixed(2)}</p><h2>Balance: ₹{(income - expenses).toFixed(2)}</h2></section>
+      <form onSubmit={addEntry}>
+        <input style={s.input} value={description} onChange={e => setDescription(e.target.value)} placeholder="Description" />
+        <input style={s.input} type="number" min="0.01" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount" />
+        <select style={s.input} value={type} onChange={e => setType(e.target.value)}><option value="expense">Expense</option><option value="income">Income</option></select>
+        <button>Add Entry</button>
+      </form>
+      <h2>History</h2>
+      {entries.map(x => <div key={x.id} style={s.item}><span>{x.description} ({x.type})</span><strong>{x.type === "expense" ? "-" : "+"}₹{x.amount.toFixed(2)}</strong><button onClick={() => setEntries(entries.filter(e => e.id !== x.id))}>Delete</button></div>)}
+    </main>
+  );
+}
+const s = { page: { maxWidth: 620, margin: "30px auto", padding: 20, fontFamily: "Arial" }, summary: { padding: 15, background: "#eef4ff", borderRadius: 8 }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "10px 0" }, item: { display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, padding: 10, borderBottom: "1px solid #ddd" } };
+
+----------------------------------------------------
+7. CONTACT BOOK
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [contacts, setContacts] = useState([]);
+  const [search, setSearch] = useState("");
+
+  function addContact(e) {
+    e.preventDefault();
+    if (!name.trim() || !phone.trim()) return;
+    setContacts([{ id: Date.now(), name: name.trim(), phone: phone.trim() }, ...contacts]);
+    setName(""); setPhone("");
+  }
+
+  const filtered = contacts.filter(c => (c.name + c.phone).toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <main style={s.page}>
+      <h1>Contact Book</h1>
+      <form onSubmit={addContact}>
+        <input style={s.input} value={name} onChange={e => setName(e.target.value)} placeholder="Contact name" />
+        <input style={s.input} value={phone} onChange={e => setPhone(e.target.value)} placeholder="Phone number" />
+        <button>Add Contact</button>
+      </form>
+      <input style={s.input} value={search} onChange={e => setSearch(e.target.value)} placeholder="Search contacts" />
+      <h2>Contacts ({filtered.length})</h2>
+      {filtered.map(c => <div key={c.id} style={s.item}><div><strong>{c.name}</strong><p>{c.phone}</p></div><button onClick={() => setContacts(contacts.filter(x => x.id !== c.id))}>Delete</button></div>)}
+      {filtered.length === 0 && <p>No contacts found.</p>}
+    </main>
+  );
+}
+const s = { page: { maxWidth: 520, margin: "30px auto", padding: 20, fontFamily: "Arial" }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "10px 0" }, item: { display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12, marginTop: 8, background: "#f4f6f8", borderRadius: 8 } };
+
+----------------------------------------------------
+8. BMI CALCULATOR
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
+  const [bmi, setBmi] = useState(null);
+  const [message, setMessage] = useState("");
+
+  function calculateBMI(e) {
+    e.preventDefault();
+    const w = Number(weight);
+    const h = Number(height) / 100;
+    if (w <= 0 || h <= 0 || !weight || !height) {
+      setMessage("Enter a valid weight and height.");
+      setBmi(null);
+      return;
+    }
+    const value = w / (h * h);
+    setBmi(value.toFixed(2));
+    if (value < 18.5) setMessage("Underweight range");
+    else if (value < 25) setMessage("Normal range");
+    else if (value < 30) setMessage("Overweight range");
+    else setMessage("Obesity range");
+  }
+
+  return (
+    <main style={s.card}>
+      <h1>BMI Calculator</h1>
+      <form onSubmit={calculateBMI}>
+        <label>Weight (kg)<input style={s.input} type="number" min="1" step="any" value={weight} onChange={e => setWeight(e.target.value)} /></label>
+        <label>Height (cm)<input style={s.input} type="number" min="1" step="any" value={height} onChange={e => setHeight(e.target.value)} /></label>
+        <button>Calculate BMI</button>
+      </form>
+      {message && <p>{message}</p>}
+      {bmi !== null && <h2>Your BMI: {bmi}</h2>}
+    </main>
+  );
+}
+const s = { card: { maxWidth: 420, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, input: { display: "block", width: "100%", padding: 10, boxSizing: "border-box", margin: "8px 0 16px" } };
+
+----------------------------------------------------
+9. NEWS / POSTS APP (SAMPLE API)
+----------------------------------------------------
+import { useEffect, useState } from "react";
+
+export default function App() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    fetch("https://jsonplaceholder.typicode.com/posts?_limit=20")
+      .then(response => {
+        if (!response.ok) throw new Error("Unable to load posts");
+        return response.json();
+      })
+      .then(data => setPosts(data))
+      .catch(() => setError("Could not load posts. Check internet connection."))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = posts.filter(post => post.title.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <main style={s.page}>
+      <h1>News / Posts Reader</h1>
+      <p>This demo displays sample posts from JSONPlaceholder, not live news.</p>
+      <input style={s.input} value={search} onChange={e => setSearch(e.target.value)} placeholder="Search titles" />
+      {loading && <p>Loading posts...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {filtered.map(post => <article key={post.id} style={s.article}><h3>{post.title}</h3><p>{post.body}</p></article>)}
+    </main>
+  );
+}
+const s = { page: { maxWidth: 760, margin: "30px auto", padding: 20, fontFamily: "Arial" }, input: { width: "100%", boxSizing: "border-box", padding: 10, margin: "12px 0" }, article: { padding: 14, margin: "12px 0", background: "#f3f6fa", borderRadius: 8 } };
+
+----------------------------------------------------
+10. DICTIONARY APP
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [word, setWord] = useState("");
+  const [definition, setDefinition] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function searchWord(e) {
+    e.preventDefault();
+    if (!word.trim()) return;
+    setLoading(true); setError(""); setDefinition(null);
+    try {
+      const response = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(word.trim()));
+      if (!response.ok) throw new Error("Word not found.");
+      const data = await response.json();
+      const meaning = data[0].meanings?.[0];
+      const def = meaning?.definitions?.[0]?.definition;
+      setDefinition({ word: data[0].word, part: meaning?.partOfSpeech || "", text: def || "No definition available." });
+    } catch {
+      setError("Definition not found. Check spelling or internet connection.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main style={s.card}>
+      <h1>Dictionary</h1>
+      <form onSubmit={searchWord} style={s.row}>
+        <input style={s.input} value={word} onChange={e => setWord(e.target.value)} placeholder="Enter an English word" />
+        <button>Search</button>
+      </form>
+      {loading && <p>Searching...</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {definition && <article><h2>{definition.word}</h2><p><em>{definition.part}</em></p><p>{definition.text}</p></article>}
+    </main>
+  );
+}
+const s = { card: { maxWidth: 600, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, row: { display: "flex", gap: 8 }, input: { flex: 1, minWidth: 0, padding: 10 } };
+
+----------------------------------------------------
+11. CURRENCY CONVERTER (FIXED DEMO RATE)
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [amount, setAmount] = useState("1");
+  const [direction, setDirection] = useState("usd-inr");
+  const USD_TO_INR = 85; // Example rate only; not a live exchange rate.
+
+  const valid = amount.trim() !== "" && Number(amount) >= 0;
+  const result = direction === "usd-inr"
+    ? Number(amount) * USD_TO_INR
+    : Number(amount) / USD_TO_INR;
+
+  return (
+    <main style={s.card}>
+      <h1>Currency Converter</h1>
+      <p>Demo exchange rate: 1 USD = ₹{USD_TO_INR}. This is not a live rate.</p>
+      <input style={s.input} type="number" min="0" step="any" value={amount} onChange={e => setAmount(e.target.value)} />
+      <select style={s.input} value={direction} onChange={e => setDirection(e.target.value)}>
+        <option value="usd-inr">USD to INR</option><option value="inr-usd">INR to USD</option>
+      </select>
+      <h2>Converted amount: {valid ? (direction === "usd-inr" ? "₹" + result.toFixed(2) : "$" + result.toFixed(2)) : "Enter a valid amount"}</h2>
+    </main>
+  );
+}
+const s = { card: { maxWidth: 500, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "12px 0" } };
+
+----------------------------------------------------
+12. RECIPE FINDER (TheMealDB API)
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [query, setQuery] = useState("");
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function findRecipes(e) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setLoading(true); setError(""); setRecipes([]);
+    try {
+      const response = await fetch("https://www.themealdb.com/api/json/v1/1/search.php?s=" + encodeURIComponent(query.trim()));
+      if (!response.ok) throw new Error("Request failed");
+      const data = await response.json();
+      setRecipes(data.meals || []);
+      if (!data.meals) setError("No recipes found. Try another dish.");
+    } catch {
+      setError("Could not load recipes. Check your internet connection.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main style={s.page}>
+      <h1>Recipe Finder</h1>
+      <form onSubmit={findRecipes} style={s.row}>
+        <input style={s.input} value={query} onChange={e => setQuery(e.target.value)} placeholder="Search recipe, e.g. chicken" />
+        <button>Search</button>
+      </form>
+      {loading && <p>Loading recipes...</p>}
+      {error && <p>{error}</p>}
+      <div style={s.grid}>
+        {recipes.map(recipe => <article key={recipe.idMeal} style={s.card}>
+          <img src={recipe.strMealThumb} alt={recipe.strMeal} style={{ width: "100%", borderRadius: 8 }} />
+          <h3>{recipe.strMeal}</h3><p>Category: {recipe.strCategory || "Not specified"}</p>
+          {recipe.strSource && <a href={recipe.strSource} target="_blank" rel="noreferrer">Recipe details</a>}
+        </article>)}
+      </div>
+    </main>
+  );
+}
+const s = { page: { maxWidth: 900, margin: "30px auto", padding: 20, fontFamily: "Arial" }, row: { display: "flex", gap: 8 }, input: { flex: 1, minWidth: 0, padding: 10 }, grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginTop: 20 }, card: { padding: 12, background: "#f4f6f8", borderRadius: 10 } };
+
+----------------------------------------------------
+13. BOOK FINDER (GOOGLE BOOKS API)
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [query, setQuery] = useState("");
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function searchBooks(e) {
+    e.preventDefault();
+    if (!query.trim()) return;
+    setLoading(true); setError(""); setBooks([]);
+    try {
+      const response = await fetch("https://www.googleapis.com/books/v1/volumes?q=" + encodeURIComponent(query.trim()) + "&maxResults=12");
+      if (!response.ok) throw new Error("Request failed");
+      const data = await response.json();
+      setBooks(data.items || []);
+      if (!data.items?.length) setError("No books found.");
+    } catch {
+      setError("Could not load books. Check your internet connection.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <main style={s.page}>
+      <h1>Book Finder</h1>
+      <form onSubmit={searchBooks} style={s.row}>
+        <input style={s.input} value={query} onChange={e => setQuery(e.target.value)} placeholder="Search by title or author" />
+        <button>Search</button>
+      </form>
+      {loading && <p>Searching books...</p>}
+      {error && <p>{error}</p>}
+      <div style={s.grid}>
+        {books.map(book => {
+          const info = book.volumeInfo || {};
+          return <article key={book.id} style={s.card}>
+            {info.imageLinks?.thumbnail && <img src={info.imageLinks.thumbnail} alt={info.title} style={{ maxWidth: 100 }} />}
+            <h3>{info.title || "Untitled"}</h3>
+            <p>{info.authors?.join(", ") || "Author unknown"}</p>
+            <p>{info.description ? info.description.slice(0, 180) + "..." : "No description available."}</p>
+            {info.infoLink && <a href={info.infoLink} target="_blank" rel="noreferrer">More details</a>}
+          </article>;
+        })}
+      </div>
+    </main>
+  );
+}
+const s = { page: { maxWidth: 900, margin: "30px auto", padding: 20, fontFamily: "Arial" }, row: { display: "flex", gap: 8 }, input: { flex: 1, minWidth: 0, padding: 10 }, grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 14, marginTop: 20 }, card: { padding: 14, background: "#f4f6f8", borderRadius: 8 } };
+
+----------------------------------------------------
+14. FORM VALIDATION
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [errors, setErrors] = useState({});
+  const [success, setSuccess] = useState("");
+
+  function updateField(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    setSuccess("");
+  }
+
+  function submitForm(e) {
+    e.preventDefault();
+    const newErrors = {};
+    if (!form.name.trim()) newErrors.name = "Name is required.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Enter a valid email.";
+    if (form.password.length < 6) newErrors.password = "Password must be at least 6 characters.";
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length === 0) setSuccess("Form submitted successfully!");
+  }
+
+  return (
+    <main style={s.card}>
+      <h1>Registration Form</h1>
+      <form onSubmit={submitForm} noValidate>
+        <label>Name<input style={s.input} name="name" value={form.name} onChange={updateField} /></label>
+        {errors.name && <p style={s.error}>{errors.name}</p>}
+        <label>Email<input style={s.input} name="email" type="email" value={form.email} onChange={updateField} /></label>
+        {errors.email && <p style={s.error}>{errors.email}</p>}
+        <label>Password<input style={s.input} name="password" type="password" value={form.password} onChange={updateField} /></label>
+        {errors.password && <p style={s.error}>{errors.password}</p>}
+        <button>Register</button>
+      </form>
+      {success && <p style={{ color: "green" }}>{success}</p>}
+    </main>
+  );
+}
+const s = { card: { maxWidth: 460, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "6px 0 12px" }, error: { color: "red", marginTop: -8 } };
+
+----------------------------------------------------
+15. DARK / LIGHT THEME
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [dark, setDark] = useState(false);
+  const theme = {
+    background: dark ? "#171717" : "#ffffff",
+    color: dark ? "#ffffff" : "#222222",
+    border: dark ? "1px solid #555" : "1px solid #ddd"
+  };
+
+  return (
+    <main style={{ ...theme, minHeight: "100vh", padding: 30, boxSizing: "border-box", fontFamily: "Arial", transition: "all 0.2s" }}>
+      <h1>{dark ? "Dark Theme" : "Light Theme"}</h1>
+      <p>Click the button to change the page theme.</p>
+      <button onClick={() => setDark(!dark)}>{dark ? "Switch to Light" : "Switch to Dark"}</button>
+      <section style={{ ...theme, maxWidth: 500, padding: 20, marginTop: 24, borderRadius: 10 }}>
+        <h2>Sample Card</h2><p>This card follows the selected theme.</p>
+      </section>
+    </main>
+  );
+}
+
+----------------------------------------------------
+16. COUNTER APP
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <main style={s.card}>
+      <h1>Counter App</h1>
+      <h2 style={{ fontSize: 48 }}>{count}</h2>
+      <div style={s.row}>
+        <button onClick={() => setCount(count - 1)}>Decrease</button>
+        <button onClick={() => setCount(0)}>Reset</button>
+        <button onClick={() => setCount(count + 1)}>Increase</button>
+      </div>
+      <p>{count > 0 ? "Positive number" : count < 0 ? "Negative number" : "Count is zero"}</p>
+    </main>
+  );
+}
+const s = { card: { maxWidth: 420, margin: "50px auto", padding: 24, textAlign: "center", fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, row: { display: "flex", justifyContent: "center", flexWrap: "wrap", gap: 8 } };
+
+----------------------------------------------------
+17. AGE CALCULATOR
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [birthDate, setBirthDate] = useState("");
+  const [age, setAge] = useState(null);
+  const [error, setError] = useState("");
+
+  function calculateAge(e) {
+    e.preventDefault();
+    if (!birthDate) { setError("Select your date of birth."); setAge(null); return; }
+    const birth = new Date(birthDate + "T00:00:00");
+    const today = new Date();
+    if (birth > today) { setError("Birth date cannot be in the future."); setAge(null); return; }
+    let years = today.getFullYear() - birth.getFullYear();
+    let months = today.getMonth() - birth.getMonth();
+    let days = today.getDate() - birth.getDate();
+    if (days < 0) {
+      months--;
+      const previousMonthDays = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+      days += previousMonthDays;
+    }
+    if (months < 0) { years--; months += 12; }
+    setAge({ years, months, days });
+    setError("");
+  }
+
+  return (
+    <main style={s.card}>
+      <h1>Age Calculator</h1>
+      <form onSubmit={calculateAge}>
+        <label>Date of birth<input style={s.input} type="date" max={new Date().toISOString().split("T")[0]} value={birthDate} onChange={e => setBirthDate(e.target.value)} /></label>
+        <button>Calculate Age</button>
+      </form>
+      {error && <p style={{ color: "red" }}>{error}</p>}
+      {age && <h2>{age.years} years, {age.months} months, {age.days} days</h2>}
+    </main>
+  );
+}
+const s = { card: { maxWidth: 450, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "10px 0 16px" } };
+
+----------------------------------------------------
+18. CALENDAR / DATE PICKER
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [event, setEvent] = useState("");
+  const [events, setEvents] = useState([]);
+
+  function addEvent(e) {
+    e.preventDefault();
+    if (!date || !event.trim()) return;
+    setEvents([...events, { id: Date.now(), date, title: event.trim() }]);
+    setEvent("");
+  }
+
+  const selectedEvents = events.filter(item => item.date === date);
+
+  return (
+    <main style={s.page}>
+      <h1>Calendar and Events</h1>
+      <label>Select date <input style={s.input} type="date" value={date} onChange={e => setDate(e.target.value)} /></label>
+      <form onSubmit={addEvent}>
+        <input style={s.input} value={event} onChange={e => setEvent(e.target.value)} placeholder="Event name" />
+        <button>Add Event</button>
+      </form>
+      <h2>Events on {date}</h2>
+      {selectedEvents.length === 0 && <p>No events for this date.</p>}
+      {selectedEvents.map(item => <div key={item.id} style={s.item}><span>{item.title}</span><button onClick={() => setEvents(events.filter(x => x.id !== item.id))}>Delete</button></div>)}
+      <h2>All Events</h2>
+      {events.slice().sort((a, b) => a.date.localeCompare(b.date)).map(item => <p key={item.id}>{item.date}: {item.title}</p>)}
+    </main>
+  );
+}
+const s = { page: { maxWidth: 600, margin: "30px auto", padding: 20, fontFamily: "Arial" }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "10px 0" }, item: { display: "flex", justifyContent: "space-between", padding: 10, background: "#f4f6f8", marginTop: 8 } };
+
+----------------------------------------------------
+19. DISCOUNT CALCULATOR
+----------------------------------------------------
+import { useState } from "react";
+
+export default function App() {
+  const [price, setPrice] = useState("");
+  const [discount, setDiscount] = useState("");
+
+  const valid = price.trim() !== "" && discount.trim() !== "" &&
+    Number(price) >= 0 && Number(discount) >= 0 && Number(discount) <= 100;
+  const saved = valid ? Number(price) * Number(discount) / 100 : 0;
+  const finalPrice = valid ? Number(price) - saved : 0;
+
+  return (
+    <main style={s.card}>
+      <h1>Discount Calculator</h1>
+      <label>Original price (₹)<input style={s.input} type="number" min="0" step="any" value={price} onChange={e => setPrice(e.target.value)} /></label>
+      <label>Discount (%)<input style={s.input} type="number" min="0" max="100" value={discount} onChange={e => setDiscount(e.target.value)} /></label>
+      {!valid && (price !== "" || discount !== "") && <p style={{ color: "red" }}>Enter price and discount between 0 and 100.</p>}
+      {valid && <section><p>Discount amount: ₹{saved.toFixed(2)}</p><h2>Final price: ₹{finalPrice.toFixed(2)}</h2></section>}
+    </main>
+  );
+}
+const s = { card: { maxWidth: 450, margin: "40px auto", padding: 24, fontFamily: "Arial", border: "1px solid #ddd", borderRadius: 10 }, input: { display: "block", width: "100%", boxSizing: "border-box", padding: 10, margin: "8px 0 16px" } };
+
+----------------------------------------------------
+20. SHOPPING BILL CALCULATOR
+----------------------------------------------------
+import { useState } from "react";
+
+const initialItems = [
+  { id: 1, name: "Notebook", price: 50, quantity: 1 },
+  { id: 2, name: "Pen", price: 10, quantity: 2 }
+];
+
+export default function App() {
+  const [items, setItems] = useState(initialItems);
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const TAX_RATE = 0.05;
+
+  function addItem(e) {
+    e.preventDefault();
+    if (!name.trim() || price === "" || Number(price) < 0 || Number(quantity) < 1) return;
+    setItems([...items, { id: Date.now(), name: name.trim(), price: Number(price), quantity: Number(quantity) }]);
+    setName(""); setPrice(""); setQuantity("1");
+  }
+
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const tax = subtotal * TAX_RATE;
+  const total = subtotal + tax;
+
+  return (
+    <main style={s.page}>
+      <h1>Shopping Bill Calculator</h1>
+      <form onSubmit={addItem} style={s.form}>
+        <input style={s.input} value={name} onChange={e => setName(e.target.value)} placeholder="Item name" />
+        <input style={s.input} type="number" min="0" step="0.01" value={price} onChange={e => setPrice(e.target.value)} placeholder="Price" />
+        <input style={s.input} type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} placeholder="Qty" />
+        <button>Add Item</button>
+      </form>
+      <table style={s.table}>
+        <thead><tr><th style={s.cell}>Item</th><th style={s.cell}>Price</th><th style={s.cell}>Qty</th><th style={s.cell}>Total</th><th style={s.cell}>Action</th></tr></thead>
+        <tbody>{items.map(item => <tr key={item.id}>
+          <td style={s.cell}>{item.name}</td><td style={s.cell}>₹{item.price.toFixed(2)}</td>
+          <td style={s.cell}>{item.quantity}</td><td style={s.cell}>₹{(item.price * item.quantity).toFixed(2)}</td>
+          <td style={s.cell}><button onClick={() => setItems(items.filter(x => x.id !== item.id))}>Remove</button></td>
+        </tr>)}</tbody>
+      </table>
+      <section style={s.total}><p>Subtotal: ₹{subtotal.toFixed(2)}</p><p>Tax (5%): ₹{tax.toFixed(2)}</p><h2>Grand Total: ₹{total.toFixed(2)}</h2></section>
+      <button onClick={() => window.print()}>Print Bill</button>
+    </main>
+  );
+}
+const s = { page: { maxWidth: 850, margin: "30px auto", padding: 20, fontFamily: "Arial" }, form: { display: "flex", gap: 8, flexWrap: "wrap" }, input: { padding: 10, flex: 1, minWidth: 120 }, table: { width: "100%", borderCollapse: "collapse", marginTop: 20 }, cell: { border: "1px solid #ccc", padding: 8, textAlign: "left" }, total: { marginTop: 20, textAlign: "right", background: "#f3f6fa", padding: 14, borderRadius: 8 } };
+
+====================================================
+END OF FILE
+====================================================
