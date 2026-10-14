@@ -1,0 +1,498 @@
+20 Simple React Practical Programs — Full App.jsx
+
+How to run
+
+Create a Vite React project:
+
+    npm create vite@latest myapp -- --template react
+    cd myapp
+    npm install
+    npm run dev
+
+For each question, replace all the contents of src/App.jsx with that
+program’s code. Run one program at a time.
+
+------------------------------------------------------------------------
+
+1. To-Do List — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [task, setTask] = useState("");
+      const [tasks, setTasks] = useState([]);
+
+      function addTask() {
+        if (task.trim() !== "") {
+          setTasks([...tasks, task]);
+          setTask("");
+        }
+      }
+
+      function deleteTask(index) {
+        setTasks(tasks.filter((_, i) => i !== index));
+      }
+
+      return (
+        <div>
+          <h1>To-Do List</h1>
+          <input value={task} onChange={(e) => setTask(e.target.value)} placeholder="Enter task" />
+          <button onClick={addTask}>Add</button>
+          {tasks.map((item, index) => (
+            <p key={index}>{item} <button onClick={() => deleteTask(index)}>Delete</button></p>
+          ))}
+        </div>
+      );
+    }
+
+2. Calculator — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [a, setA] = useState("");
+      const [b, setB] = useState("");
+      const [result, setResult] = useState("");
+
+      return (
+        <div>
+          <h1>Calculator</h1>
+          <input type="number" placeholder="First number" value={a} onChange={(e) => setA(e.target.value)} />
+          <input type="number" placeholder="Second number" value={b} onChange={(e) => setB(e.target.value)} />
+          <p>
+            <button onClick={() => setResult(Number(a) + Number(b))}>Add</button>
+            <button onClick={() => setResult(Number(a) - Number(b))}>Subtract</button>
+            <button onClick={() => setResult(Number(a) * Number(b))}>Multiply</button>
+            <button onClick={() => setResult(Number(b) !== 0 ? Number(a) / Number(b) : "Cannot divide by zero")}>Divide</button>
+          </p>
+          <h2>Result: {result}</h2>
+        </div>
+      );
+    }
+
+3. Quiz App — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const questions = [
+        { question: "React is a?", options: ["Library", "Database", "Browser"], answer: "Library" },
+        { question: "Which hook stores state?", options: ["useState", "useHTML", "useColor"], answer: "useState" }
+      ];
+      const [index, setIndex] = useState(0);
+      const [score, setScore] = useState(0);
+      const [finished, setFinished] = useState(false);
+
+      function answerQuestion(option) {
+        if (option === questions[index].answer) setScore(score + 1);
+        if (index === questions.length - 1) setFinished(true);
+        else setIndex(index + 1);
+      }
+
+      return (
+        <div>
+          <h1>Quiz App</h1>
+          {finished ? <h2>Score: {score}/{questions.length}</h2> : (
+            <>
+              <h3>{questions[index].question}</h3>
+              {questions[index].options.map((option) => (
+                <button key={option} onClick={() => answerQuestion(option)}>{option}</button>
+              ))}
+            </>
+          )}
+        </div>
+      );
+    }
+
+4. Notes App — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [note, setNote] = useState("");
+      const [notes, setNotes] = useState([]);
+
+      function addNote() {
+        if (note.trim()) {
+          setNotes([...notes, note]);
+          setNote("");
+        }
+      }
+
+      return (
+        <div>
+          <h1>Notes App</h1>
+          <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Enter note" />
+          <button onClick={addNote}>Add Note</button>
+          {notes.map((item, index) => (
+            <p key={index}>{item}
+              <button onClick={() => {
+                const edited = prompt("Edit note", item);
+                if (edited !== null) setNotes(notes.map((n, i) => i === index ? edited : n));
+              }}>Edit</button>
+              <button onClick={() => setNotes(notes.filter((_, i) => i !== index))}>Delete</button>
+            </p>
+          ))}
+        </div>
+      );
+    }
+
+5. Temperature Converter — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [celsius, setCelsius] = useState("");
+
+      return (
+        <div>
+          <h1>Temperature Converter</h1>
+          <input type="number" value={celsius} placeholder="Celsius" onChange={(e) => setCelsius(e.target.value)} />
+          <h2>Fahrenheit: {celsius === "" ? "" : (Number(celsius) * 9 / 5 + 32).toFixed(2)} °F</h2>
+        </div>
+      );
+    }
+
+6. Expense Tracker — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [name, setName] = useState("");
+      const [amount, setAmount] = useState("");
+      const [expenses, setExpenses] = useState([]);
+
+      function addExpense() {
+        if (name.trim() && amount !== "" && Number(amount) > 0) {
+          setExpenses([...expenses, { name, amount: Number(amount) }]);
+          setName("");
+          setAmount("");
+        }
+      }
+
+      const total = expenses.reduce((sum, item) => sum + item.amount, 0);
+
+      return (
+        <div>
+          <h1>Expense Tracker</h1>
+          <input placeholder="Expense name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input type="number" placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
+          <button onClick={addExpense}>Add Expense</button>
+          {expenses.map((item, index) => <p key={index}>{item.name}: ₹{item.amount}</p>)}
+          <h2>Total: ₹{total}</h2>
+        </div>
+      );
+    }
+
+7. Contact Book — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [name, setName] = useState("");
+      const [phone, setPhone] = useState("");
+      const [search, setSearch] = useState("");
+      const [contacts, setContacts] = useState([]);
+
+      function addContact() {
+        if (name.trim() && phone.trim()) {
+          setContacts([...contacts, { name, phone }]);
+          setName("");
+          setPhone("");
+        }
+      }
+
+      return (
+        <div>
+          <h1>Contact Book</h1>
+          <input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
+          <input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <button onClick={addContact}>Add Contact</button>
+          <br /><br />
+          <input placeholder="Search by name" value={search} onChange={(e) => setSearch(e.target.value)} />
+          {contacts.filter((c) => c.name.toLowerCase().includes(search.toLowerCase())).map((c, i) => (
+            <p key={i}>{c.name} - {c.phone}</p>
+          ))}
+        </div>
+      );
+    }
+
+8. BMI Calculator — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [weight, setWeight] = useState("");
+      const [height, setHeight] = useState("");
+
+      const bmi = Number(weight) / ((Number(height) / 100) ** 2);
+      const valid = weight !== "" && height !== "" && Number(weight) > 0 && Number(height) > 0;
+
+      return (
+        <div>
+          <h1>BMI Calculator</h1>
+          <input type="number" placeholder="Weight (kg)" value={weight} onChange={(e) => setWeight(e.target.value)} />
+          <input type="number" placeholder="Height (cm)" value={height} onChange={(e) => setHeight(e.target.value)} />
+          <h2>BMI: {valid ? bmi.toFixed(2) : ""}</h2>
+          {valid && <p>{bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal" : bmi < 30 ? "Overweight" : "Obese"}</p>}
+        </div>
+      );
+    }
+
+9. News App (sample API posts) — App.jsx
+
+    import { useEffect, useState } from "react";
+
+    export default function App() {
+      const [news, setNews] = useState([]);
+
+      useEffect(() => {
+        fetch("https://jsonplaceholder.typicode.com/posts?_limit=5")
+          .then((response) => response.json())
+          .then((data) => setNews(data))
+          .catch(() => setNews([]));
+      }, []);
+
+      return (
+        <div>
+          <h1>News App</h1>
+          {news.map((item) => <article key={item.id}><h3>{item.title}</h3><p>{item.body}</p></article>)}
+        </div>
+      );
+    }
+
+Note: This uses sample posts for API practice, not live news.
+
+10. Dictionary App — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [word, setWord] = useState("");
+      const [meaning, setMeaning] = useState("");
+
+      function searchWord() {
+        fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(word))
+          .then((response) => response.json())
+          .then((data) => setMeaning(data[0]?.meanings[0]?.definitions[0]?.definition || "Word not found"))
+          .catch(() => setMeaning("Word not found"));
+      }
+
+      return (
+        <div>
+          <h1>Dictionary</h1>
+          <input value={word} onChange={(e) => setWord(e.target.value)} placeholder="Enter English word" />
+          <button onClick={searchWord}>Search</button>
+          <p>{meaning}</p>
+        </div>
+      );
+    }
+
+11. Currency Converter — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [rupees, setRupees] = useState("");
+
+      return (
+        <div>
+          <h1>Currency Converter</h1>
+          <input type="number" value={rupees} onChange={(e) => setRupees(e.target.value)} placeholder="Amount in INR" />
+          <h2>USD: {rupees === "" ? "" : (Number(rupees) / 85).toFixed(2)}</h2>
+          <p>Example rate only: ₹85 = $1. Not a live exchange rate.</p>
+        </div>
+      );
+    }
+
+12. Recipe Finder — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [food, setFood] = useState("");
+      const [recipes, setRecipes] = useState([]);
+
+      function searchRecipe() {
+        fetch("https://www.themealdb.com/api/json/v1/1/search.php?s=" + encodeURIComponent(food))
+          .then((response) => response.json())
+          .then((data) => setRecipes(data.meals || []))
+          .catch(() => setRecipes([]));
+      }
+
+      return (
+        <div>
+          <h1>Recipe Finder</h1>
+          <input value={food} onChange={(e) => setFood(e.target.value)} placeholder="Enter food name" />
+          <button onClick={searchRecipe}>Search</button>
+          {recipes.map((item) => <p key={item.idMeal}>{item.strMeal}</p>)}
+        </div>
+      );
+    }
+
+13. Book Finder — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [book, setBook] = useState("");
+      const [books, setBooks] = useState([]);
+
+      function searchBook() {
+        fetch("https://www.googleapis.com/books/v1/volumes?q=" + encodeURIComponent(book))
+          .then((response) => response.json())
+          .then((data) => setBooks(data.items || []))
+          .catch(() => setBooks([]));
+      }
+
+      return (
+        <div>
+          <h1>Book Finder</h1>
+          <input value={book} onChange={(e) => setBook(e.target.value)} placeholder="Enter book name" />
+          <button onClick={searchBook}>Search</button>
+          {books.map((item) => <p key={item.id}>{item.volumeInfo.title}</p>)}
+        </div>
+      );
+    }
+
+14. Form Validation — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [email, setEmail] = useState("");
+      const [password, setPassword] = useState("");
+      const [message, setMessage] = useState("");
+
+      function submitForm(event) {
+        event.preventDefault();
+        if (!email.includes("@")) setMessage("Enter a valid email");
+        else if (password.length < 6) setMessage("Password must have at least 6 characters");
+        else setMessage("Form submitted successfully");
+      }
+
+      return (
+        <div>
+          <h1>Login Form</h1>
+          <form onSubmit={submitForm}>
+            <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <button type="submit">Login</button>
+          </form>
+          <p>{message}</p>
+        </div>
+      );
+    }
+
+15. Dark/Light Theme — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [dark, setDark] = useState(false);
+
+      return (
+        <div style={{ background: dark ? "#222" : "#fff", color: dark ? "#fff" : "#222", padding: "30px", minHeight: "200px" }}>
+          <h1>{dark ? "Dark Theme" : "Light Theme"}</h1>
+          <button onClick={() => setDark(!dark)}>Change Theme</button>
+        </div>
+      );
+    }
+
+16. Counter App — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [count, setCount] = useState(0);
+
+      return (
+        <div>
+          <h1>Counter App</h1>
+          <h2>{count}</h2>
+          <button onClick={() => setCount(count + 1)}>Increment</button>
+          <button onClick={() => setCount(count - 1)}>Decrement</button>
+          <button onClick={() => setCount(0)}>Reset</button>
+        </div>
+      );
+    }
+
+17. Age Calculator — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [birthYear, setBirthYear] = useState("");
+
+      const age = new Date().getFullYear() - Number(birthYear);
+
+      return (
+        <div>
+          <h1>Age Calculator</h1>
+          <input type="number" placeholder="Enter birth year" value={birthYear} onChange={(e) => setBirthYear(e.target.value)} />
+          <h2>Age: {birthYear && Number(birthYear) > 0 && Number(birthYear) <= new Date().getFullYear() ? age : ""}</h2>
+        </div>
+      );
+    }
+
+18. Calendar Picker — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [date, setDate] = useState("");
+
+      return (
+        <div>
+          <h1>Calendar Picker</h1>
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <h2>Selected Date: {date}</h2>
+        </div>
+      );
+    }
+
+19. Discount Calculator — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [price, setPrice] = useState("");
+      const [discount, setDiscount] = useState("");
+
+      const valid = price !== "" && discount !== "" && Number(price) >= 0 && Number(discount) >= 0 && Number(discount) <= 100;
+      const saved = valid ? Number(price) * Number(discount) / 100 : 0;
+
+      return (
+        <div>
+          <h1>Discount Calculator</h1>
+          <input type="number" placeholder="Original price" value={price} onChange={(e) => setPrice(e.target.value)} />
+          <input type="number" placeholder="Discount percentage" value={discount} onChange={(e) => setDiscount(e.target.value)} />
+          <p>Discount amount: ₹{valid ? saved.toFixed(2) : ""}</p>
+          <h2>Final price: ₹{valid ? (Number(price) - saved).toFixed(2) : ""}</h2>
+        </div>
+      );
+    }
+
+20. Shopping Bill Calculator — App.jsx
+
+    import { useState } from "react";
+
+    export default function App() {
+      const [price, setPrice] = useState("");
+      const [quantity, setQuantity] = useState("");
+
+      const valid = price !== "" && quantity !== "" && Number(price) >= 0 && Number(quantity) >= 0;
+      const subtotal = valid ? Number(price) * Number(quantity) : 0;
+      const tax = subtotal * 0.05;
+
+      return (
+        <div>
+          <h1>Shopping Bill Calculator</h1>
+          <input type="number" placeholder="Item price" value={price} onChange={(e) => setPrice(e.target.value)} />
+          <input type="number" placeholder="Quantity" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          <p>Subtotal: ₹{valid ? subtotal.toFixed(2) : ""}</p>
+          <p>Tax (5%): ₹{valid ? tax.toFixed(2) : ""}</p>
+          <h2>Final bill: ₹{valid ? (subtotal + tax).toFixed(2) : ""}</h2>
+        </div>
+      );
+    }
